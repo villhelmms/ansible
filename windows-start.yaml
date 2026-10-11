@@ -1,0 +1,57 @@
+---
+- hosts: windows
+  tasks:
+    - name: Hide Pinned Section in Start Menu
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Start
+        name: ShowPinnedSection
+        data: 0
+        type: dword
+        state: present
+
+    - name: Hide Recent Section in Start Menu
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Start
+        name: ShowRecommendedSection
+        data: 0
+        type: dword
+        state: present
+
+    - name: Disable document tracking in Start
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+        name: Start_TrackDocs
+        data: 0
+        type: dword
+        state: present
+
+    - name: Disable recommendations in Start
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+        name: Start_IrisRecommendations
+        data: 0
+        type: dword
+        state: present
+
+    - name: Disable program tracking in Start
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+        name: Start_TrackProgs
+        data: 0
+        type: dword
+        state: present
+
+    - name: Set All Apps View Mode to Categories
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Start
+        name: AllAppsViewMode
+        data: 2
+        type: dword
+        state: present
+
+    - name: Restart Explorer to apply changes
+      win_shell: |
+        Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 2
+        Start-Process explorer.exe
+      changed_when: true

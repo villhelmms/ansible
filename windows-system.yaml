@@ -1,0 +1,65 @@
+---
+- hosts: windows
+  tasks:
+
+    - name: Disable notifications - Must relog
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\PushNotifications
+        name: ToastEnabled
+        data: 0
+        type: dword
+        state: present
+
+    - name: Disable "Suggest ways to get the most out of Windows"
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\UserProfileEngagement
+        name: ScoobeSystemSettingEnabled
+        data: 0
+        type: dword
+        state: present
+
+    - name: Disable "Get tips and suggestions when using Windows"
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager
+        name: SubscribedContent-338389Enabled
+        data: 0
+        type: dword
+        state: present
+
+    - name: Set sound scheme to No Sounds
+      win_shell: |
+        $base = 'HKCU:\AppEvents\Schemes'
+        Set-ItemProperty -Path $base -Name '(default)' -Value '.None'
+        Get-ChildItem "$base\Apps" -Recurse | Where-Object { $_.PSChildName -eq '.Current' } | ForEach-Object { Set-ItemProperty -Path $_.PSPath -Name '(default)' -Value '' }
+      changed_when: true
+
+    - name: Set communications ducking to "Do nothing"
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Multimedia\Audio
+        name: UserDuckingPreference
+        data: 3
+        type: dword
+        state: present
+
+    - name: Set display scale to 100%
+      win_regedit:
+        path: HKCU:\Control Panel\Desktop
+        name: LogPixels
+        data: 96
+        type: dword
+        state: present
+
+    - name: Enable proper DPI scaling
+      win_regedit:
+        path: HKCU:\Control Panel\Desktop
+        name: Win8DpiScaling
+        data: 1
+        type: dword
+        state: present
+
+    - name: Restart Explorer to apply all changes
+      win_shell: |
+        Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 2
+        Start-Process explorer.exe
+      changed_when: true

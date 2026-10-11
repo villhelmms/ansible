@@ -1,0 +1,51 @@
+---
+- hosts: windows
+  tasks:
+    - name: Remove Widgets from Taskbar
+      win_shell: |
+        Get-Process *Widget* | Stop-Process -Force -ErrorAction SilentlyContinue
+        Get-AppxPackage Microsoft.WindowsWidgetsPlatformRuntime -AllUsers | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
+        Get-AppxPackage MicrosoftWindows.Client.WebExperience -AllUsers | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
+      register: widget_removal
+      changed_when: widget_removal.rc == 0
+
+    - name: Set Taskbar Alignment to Left
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+        name: TaskbarAl
+        data: 0
+        type: dword
+        state: present
+
+    - name: Set Searchbox Taskbar Mode to Icon
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Search
+        name: SearchboxTaskbarMode
+        data: 1
+        type: dword
+        state: present
+
+    - name: Hide Task View Button
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+        name: ShowTaskViewButton
+        data: 0
+        type: dword
+        state: present
+
+    - name: Remove pinned taskbar icons
+      win_shell: |
+        Remove-Item "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\*" -Force -ErrorAction SilentlyContinue
+      changed_when: true
+
+    - name: Remove Taskband registry settings
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband
+        state: absent
+
+    - name: Restart Explorer to apply all changes
+      win_shell: |
+        Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 2
+        Start-Process explorer.exe
+      changed_when: true
