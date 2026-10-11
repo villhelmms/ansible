@@ -1,0 +1,10 @@
+---
+- hosts: windows
+  tasks:
+    - name: Hide settings
+      win_regedit:
+        path: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
+        name: SettingsPageVisibility
+        data: "hide:easeofaccess-mousepointer;easeofaccess-mouse;mousetouchpad"
+        type: string
+        state: present

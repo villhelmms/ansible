@@ -1,0 +1,66 @@
+---
+- hosts: windows
+  tasks:
+    - name: Disable mouse pointer customization
+      win_regedit:
+        path: HKCU:\Software\Policies\Microsoft\Windows\Personalization
+        name: NoChangingMousePointers
+        data: 1
+        type: dword
+        state: present
+
+    - name: Disable mouse pointer customization v2
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes
+        name: ThemeChangesMousePointers
+        data: 0
+        type: dword
+        state: present
+
+    - name: Enable Control Panel applet restriction
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer
+        name: DisallowCpl
+        data: 1
+        type: dword
+        state: present
+
+    - name: Disallow Mouse applet
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowCpl
+        name: "1"
+        data: Microsoft.Mouse
+        type: string
+        state: present
+
+    - name: Set pointer speed to default (6/11)
+      win_regedit:
+        path: HKCU:\Control Panel\Mouse
+        name: MouseSensitivity
+        data: "10"
+        type: string
+        state: present
+
+    - name: Enable pointer precision (default)
+      win_regedit:
+        path: HKCU:\Control Panel\Mouse
+        name: MouseSpeed
+        data: "1"
+        type: string
+        state: present
+
+    - name: Pointer precision threshold 1 (default)
+      win_regedit:
+        path: HKCU:\Control Panel\Mouse
+        name: MouseThreshold1
+        data: "6"
+        type: string
+        state: present
+
+    - name: Pointer precision threshold 2 (default)
+      win_regedit:
+        path: HKCU:\Control Panel\Mouse
+        name: MouseThreshold2
+        data: "10"
+        type: string
+        state: present
