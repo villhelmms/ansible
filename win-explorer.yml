@@ -89,5 +89,23 @@
         type: dword
         state: present
 
+    - name: Remove Bags registry key
+      win_regedit:
+        path: HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\Bags
+        state: absent
+
+    - name: Remove BagMRU registry key
+      win_regedit:
+        path: HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\BagMRU
+        state: absent
+
+    - name: Set FolderType to NotSpecified
+      win_regedit:
+        path: HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\Bags\AllFolders\Shell
+        name: FolderType
+        data: "NotSpecified"
+        type: string
+        state: present
+
     - name: Restart Windows Explorer
       win_shell: Stop-Process -Name explorer -Force
