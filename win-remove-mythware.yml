@@ -1,0 +1,18 @@
+---
+- hosts: windows
+  tasks:
+    - name: Stop Mythware processes
+      win_shell: |
+        $mythwareProcessNames = @("GATESRV", "LoopbackHelper", "MasterHelper", "ProcHelper64", "DispcapHelper", "StudentMain")
+        $mythwareProcesses = Get-Process | Where-Object { ($_.Path -like "*Mythware*") -or ($mythwareProcessNames -contains $_.Name) }
+        if ($mythwareProcesses) {
+          foreach ($process in $mythwareProcesses) {
+            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+          }
+        }
+      ignore_errors: yes
+
+    - name: Remove Mythware directory
+      win_file:
+        path: 'C:\Program Files (x86)\Mythware'
+        state: absent

@@ -1,0 +1,13 @@
+---
+- hosts: windows
+  tasks:
+  - name: Remove Skolens from Administrators group
+    win_group_membership:
+      name: Administrators
+      members: Skolens
+      state: absent
+
+  - name: Ensure Skolens password never expires
+    win_user:
+      name: Skolens
+      password_never_expires: yes

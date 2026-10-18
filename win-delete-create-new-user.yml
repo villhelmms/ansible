@@ -1,0 +1,26 @@
+---
+- hosts: windows
+  tasks:
+  - name: Delete user profile folders matching patterns
+    win_shell: |
+      $usersPath = "C:\Users"
+      $folderNamesToDelete = @("Skolens*", "Skolnieks", "User")
+      Get-ChildItem -Path $usersPath -Directory | Where-Object {
+        $folder = $_
+        $folderNamesToDelete | ForEach-Object { $folder.Name -like $_ }
+      } | ForEach-Object {
+        Remove-Item -Path $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+      }
+      exit 0
+
+  - name: Delete existing user Skolens
+    win_shell: NET USER Skolens /delete 2>$null; exit 0
+
+  - name: Create new user Skolens
+    win_shell: NET USER Skolens "" /add /y /expires:never
+
+  - name: Add Skolens to Administrators group
+    win_shell: NET LOCALGROUP Administrators Skolens /add
+
+  - name: Ensure password never expires
+    win_shell: Set-LocalUser -Name Skolens -PasswordNeverExpires $true
