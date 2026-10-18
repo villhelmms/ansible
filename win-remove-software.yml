@@ -30,6 +30,23 @@
       register: onedrive_removal
       changed_when: onedrive_removal.rc == 0
 
+
+    - name: Disable Edge Startup Boost
+      win_regedit:
+        path: HKLM:\SOFTWARE\Policies\Microsoft\Edge
+        name: StartupBoostEnabled
+        data: 0
+        type: dword
+        state: present
+
+    - name: Disable Edge in Background
+      win_regedit:
+        path: HKLM:\SOFTWARE\Policies\Microsoft\Edge
+        name: BackgroundModeEnabled
+        data: 0
+        type: dword
+        state: present
+
     - name: Remove Microsoft Edge
       win_shell: |
         $Path = Resolve-Path -Path "$env:ProgramFiles (x86)\Microsoft\Edge\Application\*\Installer\setup.exe" | Select-Object -Last 1
@@ -52,6 +69,10 @@
         state: absent
       loop:
         - Microsoft.Windows.Copilot
+        - Microsoft.Edge
+        - Microsoft.Edge.Beta
+        - Microsoft.Edge.GameAssist
+        - Microsoft.MicrosoftEdge.Stable
         - Microsoft.Family
         - Microsoft.WindowsFeedbackHub
         - Microsoft.Bing
@@ -64,6 +85,7 @@
         - Microsoft.OutlookForWindows
         - Microsoft.PowerAutomateDesktop
         - Microsoft.QuickAssist
+        - Microsoft.MicrosoftStickyNotes
         - Microsoft.MicrosoftSolitaireCollection
         - Microsoft.Xbox
         - Microsoft.XboxGameOverlay

@@ -1,0 +1,93 @@
+---
+- hosts: windows
+  tasks:
+    - name: Hide Recent Section in Start Menu
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+        name: LaunchTo
+        data: 1
+        type: dword
+        state: present
+
+    - name: Set default value for CLSID {f874310e-b6b7-47dc-bc84-b9e6b38f5903}
+      win_regedit:
+        path: HKCU:\Software\Classes\CLSID\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}
+        name: ""
+        data: "CLSID_MSGraphHomeFolder"
+        type: string
+        state: present
+
+    - name: Set System.IsPinnedToNameSpaceTree for CLSID {f874310e-b6b7-47dc-bc84-b9e6b38f5903}
+      win_regedit:
+        path: HKCU:\Software\Classes\CLSID\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}
+        name: System.IsPinnedToNameSpaceTree
+        data: 0
+        type: dword
+        state: present
+
+    - name: Set System.IsPinnedToNameSpaceTree for CLSID {e88865ea-0e1c-4e20-9aa6-edcd0212c87c}
+      win_regedit:
+        path: HKCU:\Software\Classes\CLSID\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}
+        name: System.IsPinnedToNameSpaceTree
+        data: 0
+        type: dword
+        state: present
+
+    - name: Hide Recently used files
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+        name: Start_TrackDocs
+        data: 0
+        type: dword
+        state: present
+
+    - name: Hide Frequently used files
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer
+        name: ShowFrequent
+        data: 0
+        type: dword
+        state: present
+
+    - name: Hide Cloud files
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer
+        name: ShowCloudFilesInQuickAccess
+        data: 0
+        type: dword
+        state: present
+
+    - name: Hide Recommendations
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer
+        name: ShowRecommendations
+        data: 0
+        type: dword
+        state: present
+
+    - name: Show File Extentions
+      win_regedit:
+        path: HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+        name: HideFileExt
+        data: 0
+        type: dword
+        state: present
+
+    - name: Show File Extentions
+      win_regedit:
+        path: HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+        name: HideFileExt
+        data: 0
+        type: dword
+        state: present
+    
+    - name: Decrease Space Between Items
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+        name: UseCompactMode
+        data: 1
+        type: dword
+        state: present
+
+    - name: Restart Windows Explorer
+      win_shell: Stop-Process -Name explorer -Force
