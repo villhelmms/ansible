@@ -5,6 +5,6 @@
       win_regedit:
         path: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
         name: SettingsPageVisibility
-        data: "hide:easeofaccess-mousepointer;easeofaccess-mouse;mousetouchpad"
+        data: "hide:easeofaccess-mousepointer;easeofaccess-mouse;easeofaccess-magnifier;mousetouchpad;easeofaccess-highcontrast;home;personalization-background;personalization-textinput;fonts;personalization-lighting;personalization-colors;themes;personalization;personalization-start-places;lockscreen;taskbar;personalization-touchkeyboard;deviceusage;otherusers;emailandaccounts;sync;workplace;signinoptions;backup;yourinfo;maps;printers;mobile-devices;nightlight;findmydevice;developers;gaming-gamebar;gaming-gamedvr;gaming-gamemode;quietmomentsgame;gaming-trueplay"
         type: string
         state: present

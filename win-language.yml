@@ -1,0 +1,35 @@
+---
+- hosts: windows
+  tasks:  
+  - name: Install Latvian language pack
+    win_shell: |
+      if (-not (Get-InstalledLanguage -Language lv-LV -ErrorAction SilentlyContinue)) {
+        Install-Language -Language lv-LV -ErrorAction Stop
+      }
+    become: true
+    become_method: runas
+    become_user: SYSTEM
+
+  - name: Set Latvian display language, region and format
+    win_shell: |
+      Set-SystemPreferredUILanguage -Language lv-LV
+      Set-WinUILanguageOverride -Language lv-LV
+      Set-WinUserLanguageList -LanguageList lv-LV -Force
+      Set-Culture -CultureInfo lv-LV
+      Set-WinSystemLocale -SystemLocale lv-LV
+      Set-WinHomeLocation -GeoId 140
+      Copy-UserInternationalSettingsToSystem -WelcomeScreen $true -NewUser $true
+    become: true
+    become_method: runas
+    become_user: SYSTEM
+
+  - name: Uninstall all other language packs
+    win_shell: |
+      Get-InstalledLanguage | Where-Object { $_.LanguageId -ne 'lv-LV' } |
+        ForEach-Object { Uninstall-Language -Language $_.LanguageId }
+    become: true
+    become_method: runas
+    become_user: SYSTEM
+
+  - name: Reboot to apply language changes
+    win_reboot:

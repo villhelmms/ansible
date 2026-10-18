@@ -64,3 +64,174 @@
         data: "10"
         type: string
         state: present
+
+    - name: Create wallpaper folder
+      win_file:
+        path: C:\ProgramData\VJCG
+        state: directory
+
+    - name: Download VJCG wallpaper
+      win_get_url:
+        url: https://www.vjcgimnazija.lv/wp-content/uploads/2025/06/vjcg_fons.png
+        dest: C:\ProgramData\VJCG\vjcg_fons.png
+        force: false
+
+    - name: Set desktop wallpaper path (policy)
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\System
+        name: Wallpaper
+        data: C:\ProgramData\VJCG\vjcg_fons.png
+        type: string
+        state: present
+
+    - name: Set wallpaper style to Fill (policy)
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\System
+        name: WallpaperStyle
+        data: "10"
+        type: string
+        state: present
+
+    - name: Disable transparency effect
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize
+        name: EnableTransparency
+        data: 0
+        type: dword
+        state: present
+
+    - name: Disable automatic accent color from wallpaper
+      win_regedit:
+        path: HKCU:\Control Panel\Desktop
+        name: AutoColorization
+        data: 0
+        type: dword
+        state: present
+
+    - name: Set accent color (Windows green #107C10)
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent
+        name: AccentColorMenu
+        data: 4279270416   # 0xFF107C10 (ABGR)
+        type: dword
+        state: present
+
+    - name: Set Start/taskbar accent color
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent
+        name: StartColorMenu
+        data: 4279270416
+        type: dword
+        state: present
+
+    - name: Set DWM accent color
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\DWM
+        name: AccentColor
+        data: 4279270416
+        type: dword
+        state: present
+
+    - name: Allow wallpaper, theme, appearance and lock screen changes (HKLM policies)
+      win_regedit:
+        path: "{{ item.path }}"
+        name: "{{ item.name }}"
+        data: 1
+        type: dword
+        state: present
+      loop:
+        - { path: 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\ActiveDesktop', name: NoAddingComponents }
+        - { path: 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\ActiveDesktop', name: NoChangingWallPaper }
+        - { path: 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\ActiveDesktop', name: NoComponents }
+        - { path: 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer', name: NoThemesTab }
+        - { path: 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization', name: NoChangingLockScreen }
+        - { path: 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System', name: NoDispAppearancePage }
+        - { path: 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System', name: NoDispBackgroundPage }
+
+    - name: Enable screen saver (policy)
+      win_regedit:
+        path: 'HKCU:\Software\Policies\Microsoft\Windows\Control Panel\Desktop'
+        name: ScreenSaveActive
+        data: 1
+        type: dword
+        state: present
+
+    - name: Disable dynamic lighting
+      win_regedit:
+        path: 'HKCU:\Software\Microsoft\Lighting'
+        name: AmbientLightingEnabled
+        data: 0
+        type: dword
+        state: present
+
+    - name: Disable widgets on lock screen
+      win_regedit:
+        path: HKLM:\SOFTWARE\Policies\Microsoft\Dsh
+        name: DisableWidgetsOnLockScreen
+        data: 0
+        type: dword
+        state: present
+
+    - name: Turn off Windows Spotlight features (machine policy)
+      win_regedit:
+        path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent
+        name: DisableWindowsSpotlightFeatures
+        data: 1
+        type: dword
+        state: present
+
+    - name: Turn off Windows Spotlight features (user policy)
+      win_regedit:
+        path: HKCU:\Software\Policies\Microsoft\Windows\CloudContent
+        name: DisableWindowsSpotlightFeatures
+        data: 1
+        type: dword
+        state: present
+
+    - name: Turn off "Show recently added apps" (user setting)
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Start
+        name: ShowRecentList
+        data: 0
+        type: dword
+        state: present
+
+    - name: Force "Show recently added apps" off (policy)
+      win_regedit:
+        path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer
+        name: HideRecentlyAddedApps
+        data: 1
+        type: dword
+        state: present
+
+    - name: Prevent moving the taskbar to another screen edge
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer
+        name: TaskbarNoRedock
+        data: 1
+        type: dword
+        state: present
+
+    - name: Disable Game Mode
+      win_regedit:
+        path: HKCU:\Software\Microsoft\GameBar
+        name: GameBar
+        data: 0
+        type: dword
+        state: present
+
+    - name: Disable GameDVR
+      win_regedit:
+        path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR
+        name: AllowGameDVR
+        data: 0
+        type: dword
+        state: present
+
+    - name: Disable Game Mode Scheduling
+      win_regedit:
+        path: HKLM:\SOFTWARE\Microsoft\PolicyManager\default\ApplicationManagement\AllowGameDVR
+        name: value
+        data: 0
+        type: dword
+        state: present
