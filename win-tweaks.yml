@@ -1,0 +1,214 @@
+---
+- hosts: windows
+  tasks:
+    - name: Disable Consumer Features
+      win_regedit:
+        path: HKLM:\SOFTWARE\Policies\\Microsoft\Windows\CloudContent
+        name: DisableWindowsConsumerFeatures
+        data: 1
+        type: dword
+        state: present
+
+    - name: Disable Location Tracking - Stop and disable lfsvc service
+      win_service:
+        name: lfsvc
+        start_mode: disabled
+        state: stopped
+
+    - name: Disable Location Tracking - Set location consent to Deny
+      win_regedit:
+        path: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location
+        name: Value
+        data: "Deny"
+        type: string
+        state: present
+
+    - name: Disable Location Tracking - Set SensorPermissionState to 0
+      win_regedit:
+        path: HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}
+        name: SensorPermissionState
+        data: 0
+        type: dword
+        state: present
+
+    - name: Disable Location Tracking - Disable Maps auto-update
+      win_regedit:
+        path: HKLM:\SYSTEM\Maps
+        name: AutoUpdateEnabled
+        data: 0
+        type: dword
+        state: present
+
+    - name: Disable Microsoft Store Recommended Search Results
+      win_shell: |
+        $path = "$env:LOCALAPPDATA\Packages\Microsoft.WindowsStore_8wekyb3d8bbwe\LocalState\store.db"
+        if (Test-Path $path) {
+          icacls $path /deny Everyone:F
+        }
+
+    - name: Prevent Device Companion Apps
+      win_regedit:
+        path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\Device Metadata
+        name: PreventDeviceMetadataFromNetwork
+        data: 1
+        type: dword
+        state: present
+
+    - name: Configure service startup types
+      win_shell: |
+        $services = @(
+          @{Name="CscService"; StartupType="Disabled"},
+          @{Name="DiagTrack"; StartupType="Disabled"},
+          @{Name="MapsBroker"; StartupType="Manual"},
+          @{Name="StorSvc"; StartupType="Manual"},
+          @{Name="SharedAccess"; StartupType="Disabled"}
+        )
+        
+        foreach ($svc in $services) {
+          $service = Get-Service -Name $svc.Name -ErrorAction SilentlyContinue
+          if ($service) {
+            Set-Service -Name $svc.Name -StartupType $svc.StartupType
+            if ($svc.StartupType -eq "Disabled") {
+              Stop-Service -Name $svc.Name -Force -ErrorAction SilentlyContinue
+            }
+          }
+        }
+
+    - name: Telemetry - Disable AdvertisingInfo
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo
+        name: Enabled
+        data: 0
+        type: dword
+        state: present
+
+    - name: Telemetry - Disable TailoredExperiencesWithDiagnosticDataEnabled
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Privacy
+        name: TailoredExperiencesWithDiagnosticDataEnabled
+        data: 0
+        type: dword
+        state: present
+
+    - name: Telemetry - Disable OnlineSpeechPrivacy
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy
+        name: HasAccepted
+        data: 0
+        type: dword
+        state: present
+
+    - name: Telemetry - Disable TIPC
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Input\TIPC
+        name: Enabled
+        data: 0
+        type: dword
+        state: present
+
+    - name: Telemetry - Enable RestrictImplicitInkCollection
+      win_regedit:
+        path: HKCU:\Software\Microsoft\InputPersonalization
+        name: RestrictImplicitInkCollection
+        data: 1
+        type: dword
+        state: present
+
+    - name: Telemetry - Enable RestrictImplicitTextCollection
+      win_regedit:
+        path: HKCU:\Software\Microsoft\InputPersonalization
+        name: RestrictImplicitTextCollection
+        data: 1
+        type: dword
+        state: present
+
+    - name: Telemetry - Disable HarvestContacts
+      win_regedit:
+        path: HKCU:\Software\Microsoft\InputPersonalization\TrainedDataStore
+        name: HarvestContacts
+        data: 0
+        type: dword
+        state: present
+
+    - name: Telemetry - Disable AcceptedPrivacyPolicy
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Personalization\Settings
+        name: AcceptedPrivacyPolicy
+        data: 0
+        type: dword
+        state: present
+
+    - name: Telemetry - Disable AllowTelemetry
+      win_regedit:
+        path: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection
+        name: AllowTelemetry
+        data: 0
+        type: dword
+        state: present
+
+    - name: Telemetry - Disable Start_TrackProgs
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+        name: Start_TrackProgs
+        data: 0
+        type: dword
+        state: present
+
+    - name: Telemetry - Disable PublishUserActivities
+      win_regedit:
+        path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\System
+        name: PublishUserActivities
+        data: 0
+        type: dword
+        state: present
+
+    - name: Telemetry - Disable SIUF Rules
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Siuf\Rules
+        name: NumberOfSIUFInPeriod
+        data: 0
+        type: dword
+        state: present
+
+    - name: Telemetry - Remove PeriodInNanoSeconds registry value
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Siuf\Rules
+        name: PeriodInNanoSeconds
+        state: absent
+
+    - name: Telemetry - Disable Defender Auto Sample Submission
+      win_shell: Set-MpPreference -SubmitSamplesConsent 2
+      ignore_errors: yes
+
+    - name: Telemetry - Disable wermgr service
+      win_shell: |
+        $service = Get-Service -Name wermgr -ErrorAction SilentlyContinue
+        if ($service) {
+          Set-Service -Name wermgr -StartupType Disabled -ErrorAction SilentlyContinue
+          Stop-Service -Name wermgr -Force -ErrorAction SilentlyContinue
+        }
+        exit 0
+      ignore_errors: yes
+
+    - name: Telemetry - Disable PowerShell 7 telemetry
+      win_environment:
+        name: POWERSHELL_TELEMETRY_OPTOUT
+        value: "1"
+        level: machine
+        state: present
+
+    - name: Disable Bing Search
+      win_regedit:
+        path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Search
+        name: BingSearchEnabled
+        data: 0
+        type: dword
+        state: present
+
+    - name: Disable Sticky Keys
+      win_regedit:
+        path: HKCU:\Control Panel\Accessibility\StickyKeys
+        name: Flags
+        data: 506
+        type: dword
+        state: present
